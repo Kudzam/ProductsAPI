@@ -98,6 +98,18 @@ namespace ProductsAPI.Controllers
             return NoContent();
 
         }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteProductModel(int id)
+        {
+            var product = PM.FirstOrDefault(p => p.Id == id);
+            if(product is null)
+            {
+                return NotFound();
+            }
+            PM.Remove(product);
+            return NoContent();
+        }
        
 
 
