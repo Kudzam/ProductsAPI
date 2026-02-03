@@ -44,7 +44,7 @@ namespace ProductsAPI.Controllers
         }
 
         [HttpGet]
-        [Route("/{id}")]
+        [Route("getproduct/{id}")]
         public ActionResult<ProductsModel> GetProductByID(int id)
         {
             var product = PM.FirstOrDefault(p => p.Id == id);
@@ -56,7 +56,7 @@ namespace ProductsAPI.Controllers
                 return Ok(product);
         }
 
-        [HttpPost]
+        [HttpPost("/add")]
         public ActionResult<ProductsModel> AddProduct(ProductsModel productsModel)
         {
             if (productsModel is null)
@@ -80,7 +80,7 @@ namespace ProductsAPI.Controllers
             return product;
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("put/{id}")]
         public IActionResult UpdateProduct(int id, ProductsModel productsModel)
         {
             var product = PM.FirstOrDefault(p => p.Id == id);
@@ -99,7 +99,7 @@ namespace ProductsAPI.Controllers
 
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("delete/{id}")]
         public IActionResult DeleteProductModel(int id)
         {
             var product = PM.FirstOrDefault(p => p.Id == id);
