@@ -55,6 +55,49 @@ namespace ProductsAPI.Controllers
             else
                 return Ok(product);
         }
+
+        [HttpPost]
+        public ActionResult<ProductsModel> AddProduct(ProductsModel productsModel)
+        {
+            if (productsModel is null)
+            {
+                return BadRequest();
+            }
+            /*
+            var product = new ProductsModel()
+            {
+                Id = 4,
+                ProductType = "Jeans",
+                ProductLabel = "Primark",
+                Contractor = "Outsource",
+                Quantity = 67
+            };*/
+
+            productsModel.Id = PM.Max(p => p.Id) + 1;
+            PM.Add(productsModel);
+            var product = CreatedAtAction(nameof(GetProductByID), new { id = productsModel.Id },productsModel );
+
+            return product;
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult UpdateProduct(int id, ProductsModel productsModel)
+        {
+            var product = PM.FirstOrDefault(p => p.Id == id);
+            if (product is null)
+            {
+                return NotFound();
+            }
+
+            product.Id = productsModel.Id;
+            product.ProductType = productsModel.ProductType;
+            product.ProductLabel = productsModel.ProductLabel;
+            product.Contractor = productsModel.Contractor;
+            product.Quantity = productsModel.Quantity;
+
+            return NoContent();
+
+        }
        
 
 
