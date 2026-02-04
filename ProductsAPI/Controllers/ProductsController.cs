@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ProductsAPI.Data;
 using ProductsAPI.Models;
 
 namespace ProductsAPI.Controllers
@@ -8,46 +10,24 @@ namespace ProductsAPI.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        static private List<ProductsModel> PM = new List<ProductsModel>
+        private readonly ProductsDbContext _context;
+        public ProductsController(ProductsDbContext context)
         {
-            new ProductsModel
-            {
-             Id = 1,
-            ProductType = "Jeans",
-            ProductLabel = "Levi",
-            Contractor = "Outsource",
-            Quantity = 90
-            }, 
-            new ProductsModel
-            {
-                Id = 2,
-            ProductType = "T-Shirt",
-            ProductLabel = "Next",
-            Contractor = "Outsource",
-            Quantity = 38
-            },
-            new ProductsModel
-            {
-                Id = 3,
-            ProductType = "Jacket",
-            ProductLabel = "RiverIsland",
-            Contractor = "InHouse",
-            Quantity = 50
-            }
+            _context = context;
+        }
 
-        };
 
         [HttpGet]
-        public ActionResult<List<ProductsModel>>GetProducts()
+        public async Task <ActionResult<List<ProductsModel>>>GetProducts()
         {
-            return Ok(PM);
+            return Ok(await _context.ProductsModels.ToListAsync());
         }
 
         [HttpGet]
         [Route("getproduct/{id}")]
-        public ActionResult<ProductsModel> GetProductByID(int id)
+        public async Task <ActionResult<ProductsModel>> GetProductByID(int id)
         {
-            var product = PM.FirstOrDefault(p => p.Id == id);
+            var product = await _context.ProductsModels.FindAsync(id);
             if (product is null)
             {
                 return NotFound();
@@ -57,33 +37,22 @@ namespace ProductsAPI.Controllers
         }
 
         [HttpPost("/add")]
-        public ActionResult<ProductsModel> AddProduct(ProductsModel productsModel)
+        public async Task <ActionResult<ProductsModel>> AddProduct(ProductsModel productsModel)
         {
             if (productsModel is null)
             {
                 return BadRequest();
             }
-            /*
-            var product = new ProductsModel()
-            {
-                Id = 4,
-                ProductType = "Jeans",
-                ProductLabel = "Primark",
-                Contractor = "Outsource",
-                Quantity = 67
-            };*/
+             _context.ProductsModels.Add(productsModel);
+            await _context.SaveChangesAsync();
 
-            productsModel.Id = PM.Max(p => p.Id) + 1;
-            PM.Add(productsModel);
-            var product = CreatedAtAction(nameof(GetProductByID), new { id = productsModel.Id },productsModel );
-
-            return product;
+            return CreatedAtAction(nameof(GetProductByID), new { id = productsModel.Id }, productsModel);
         }
 
         [HttpPut("put/{id}")]
-        public IActionResult UpdateProduct(int id, ProductsModel productsModel)
+        public async Task <IActionResult> UpdateProduct(int id, ProductsModel productsModel)
         {
-            var product = PM.FirstOrDefault(p => p.Id == id);
+            var product = await _context.ProductsModels.FindAsync(id);
             if (product is null)
             {
                 return NotFound();
@@ -95,23 +64,28 @@ namespace ProductsAPI.Controllers
             product.Contractor = productsModel.Contractor;
             product.Quantity = productsModel.Quantity;
 
+            await _context.SaveChangesAsync();
+
             return NoContent();
 
         }
 
         [HttpDelete("delete/{id}")]
-        public IActionResult DeleteProductModel(int id)
+        public async Task<IActionResult> DeleteProductModel(int id)
         {
-            var product = PM.FirstOrDefault(p => p.Id == id);
-            if(product is null)
+            var product = await _context.ProductsModels.FindAsync(id);
+            if (product is null)
             {
                 return NotFound();
             }
-            PM.Remove(product);
+
+            _context.ProductsModels.Remove(product);
+            await _context.SaveChangesAsync();
+
             return NoContent();
         }
        
-
+        
 
     }
 }
